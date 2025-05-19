@@ -1152,8 +1152,9 @@ function Invoke-UploadWin32Lob() {
             break
         }
         Write-Verbose "Creating application in Intune..."
-        $mobileApp = New-MgDeviceAppMgtMobileApp -BodyParameter ($mobileAppBody | ConvertTo-Json)
-        
+        #$mobileApp = New-MgDeviceAppMgtMobileApp -BodyParameter ($mobileAppBody | ConvertTo-Json)
+        $mobileApp = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/" -Body ($mobileAppBody | ConvertTo-Json) -ContentType "application/json" -OutputType PSObject
+                
         # Get the content version for the new app (this will always be 1 until the new app is committed).
         Write-Verbose "Creating Content Version in the service for the application..."
         $appId = $mobileApp.id
@@ -1209,10 +1210,12 @@ function Invoke-UploadWin32Lob() {
         
         # Wait for the service to process the commit file request.
         Write-Verbose "Waiting for the service to process the commit file request..."
+
         $file = Start-WaitForFileProcessing $fileUri "CommitFile"
         
         # Commit the app.
         Write-Verbose "Committing the file into Azure Storage..."
+        
         $commitAppUri = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId"
         $commitAppBody = GetAppCommitBody $contentVersionId $LOBType
         Invoke-MgGraphRequest -Method PATCH -Uri $commitAppUri -Body ($commitAppBody | ConvertTo-Json)
@@ -1491,7 +1494,7 @@ $uninstallscriptfile = $apppath + "\" + $uninstallfilename
 $uninstallscript | Out-File $uninstallscriptfile -Encoding utf8
 Write-Host "Script created at $uninstallscriptfile"
 
-##Create Detection Script
+##Create Detection Script 
 Write-Verbose "Creating Detection Script for $appname"
 $detectionscript = new-detectionscriptinstall -appid $appid -appname $appname
 $detectionscriptfile = $apppath + "\detection$appid.ps1"

@@ -1231,8 +1231,6 @@ function Invoke-UploadWin32Lob() {
         
         # Create a new file for the app.
         Write-Verbose "Creating a new file entry in Azure for the upload..."
-        writelog "Creating a new file entry in Azure for the upload..."
-
         $contentVersionId = $contentVersion.id
         $fileBody = GetAppFileBody "$FileName" $Size $EncrySize $null
         $filesUri = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/$LOBType/contentVersions/$contentVersionId/files"
@@ -1240,16 +1238,12 @@ function Invoke-UploadWin32Lob() {
             
         # Wait for the service to process the new file request.
         Write-Verbose "Waiting for the file entry URI to be created..."
-        writelog "Waiting for the file entry URI to be created..."
-
         $fileId = $file.id
         $fileUri = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/$LOBType/contentVersions/$contentVersionId/files/$fileId"
         $file = Start-WaitForFileProcessing $fileUri "AzureStorageUriRequest"
         
         # Upload the content to Azure Storage.
         Write-Verbose "Uploading file to Azure Storage..."
-        writelog "Uploading file to Azure Storage..."
-
         
         UploadFileToAzureStorage $file.azureStorageUri "$IntuneWinFile" $fileUri
         
@@ -1258,20 +1252,16 @@ function Invoke-UploadWin32Lob() {
         
         # Commit the file.
         Write-Verbose "Committing the file into Azure Storage..."
-        writelog "Committing the file into Azure Storage..."
-
         $commitFileUri = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId/$LOBType/contentVersions/$contentVersionId/files/$fileId/commit"
         Invoke-MgGraphRequest -Uri $commitFileUri -Method POST -Body ($fileEncryptionInfo | ConvertTo-Json)
         
         # Wait for the service to process the commit file request.
         Write-Verbose "Waiting for the service to process the commit file request..."
-        writelog "Waiting for the service to process the commit file request..."
 
         $file = Start-WaitForFileProcessing $fileUri "CommitFile"
         
         # Commit the app.
         Write-Verbose "Committing the file into Azure Storage..."
-        writelog "Committing the file into Azure Storage..."
 
         $commitAppUri = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$appId"
         $commitAppBody = GetAppCommitBody $contentVersionId $LOBType
