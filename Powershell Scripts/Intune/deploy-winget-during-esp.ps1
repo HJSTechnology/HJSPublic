@@ -19,7 +19,7 @@
   Installs PS7, Winget and Company Portal
 .DESCRIPTION
 .Installs PS7, Winget and Company Portal
-
+ 
 .INPUTS
 None
 .OUTPUTS
@@ -33,30 +33,30 @@ In-Line Outputs
 .EXAMPLE
 N/A
 #>
-
+ 
 # GitHub API endpoint for PowerShell releases
 # GitHub API endpoint for PowerShell releases 
 $githubApiUrl = 'https://api.github.com/repos/PowerShell/PowerShell/releases/latest'
-
+ 
 # Fetch the latest release details
 $release = Invoke-RestMethod -Uri $githubApiUrl
-
+ 
 ##Find asset with .msi in the name
 $asset = $release.assets | Where-Object { $_.name -like "*msi*" -and $_.name -like "*x64*" }
-
+ 
 # Get the download URL and filename of the asset (assuming it's a MSI file)
 $downloadUrl = $asset.browser_download_url
 $filename = $asset.name
-
+$msipath = "$env:TEMP\$filename"
 # Download the latest release
-Invoke-WebRequest -Uri $downloadUrl -OutFile "$env:TEMP/$filename"
-
+Invoke-WebRequest -Uri $downloadUrl -OutFile $msipath
+ 
 # Install PowerShell 7
-Start-Process msiexec.exe -Wait -ArgumentList "/I "$env:TEMP/$filename" /qn"
-
+Start-Process msiexec.exe -Wait -ArgumentList "/I `"$msipath`"", "/qn"
+ 
 # Start a new PowerShell 7 session
 $pwshExecutable = "C:\Program Files\PowerShell\7\pwsh.exe"
-
+ 
 # Run a script block in PowerShell 7
 & $pwshExecutable -Command {
   $provider = Get-PackageProvider NuGet -ErrorAction Ignore
@@ -68,15 +68,12 @@ $pwshExecutable = "C:\Program Files\PowerShell\7\pwsh.exe"
 & $pwshExecutable -Command Install-Module microsoft.winget.client -Force -AllowClobber 
 & $pwshExecutable -Command Import-Module microsoft.winget.client
 & $pwshExecutable -Command Repair-WingetPackageManager -Force -Latest -Verbose
-
-
+ 
+ 
 $ResolveWingetPath = Resolve-Path "C:\Program Files\WindowsApps\Microsoft.DesktopAppInstaller_*_x64__8wekyb3d8bbwe"
-
+ 
 if ($ResolveWingetPath) {
   $WingetPath = $ResolveWingetPath[-1].Path
   $Winget = $WingetPath + "\winget.exe"
-  &$winget list --id 7zip --accept-source-agreements --accept-package-agreements
+  &$winget list --id 7zip --accept-source-agreements
 }
-
-    
-   
