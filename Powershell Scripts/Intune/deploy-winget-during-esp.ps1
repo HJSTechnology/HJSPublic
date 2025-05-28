@@ -35,7 +35,7 @@ N/A
 #>
 
 # GitHub API endpoint for PowerShell releases
-# GitHub API endpoint for PowerShell releases
+# GitHub API endpoint for PowerShell releases 
 $githubApiUrl = 'https://api.github.com/repos/PowerShell/PowerShell/releases/latest'
 
 # Fetch the latest release details
@@ -49,10 +49,10 @@ $downloadUrl = $asset.browser_download_url
 $filename = $asset.name
 
 # Download the latest release
-Invoke-WebRequest -Uri $downloadUrl -OutFile $filename
+Invoke-WebRequest -Uri $downloadUrl -OutFile "$env:TEMP/$filename"
 
 # Install PowerShell 7
-Start-Process msiexec.exe -Wait -ArgumentList "/I $filename /qn"
+Start-Process msiexec.exe -Wait -ArgumentList "/I "$env:TEMP/$filename" /qn"
 
 # Start a new PowerShell 7 session
 $pwshExecutable = "C:\Program Files\PowerShell\7\pwsh.exe"
